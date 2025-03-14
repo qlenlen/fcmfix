@@ -39,19 +39,19 @@ jobs:
         echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
         echo Last build tool version is: $BUILD_TOOL_VERSION
 
-    - name: Sign APK
-      uses: r0adkll/sign-android-release@v1
-      with:
-        releaseDirectory: ${{ github.workspace }}/app/build/outputs/apk/release
-        signingKeyBase64: ${{ secrets.SIGNINGKEYBASE64 }}
-        alias: ${{ secrets.ALIAS }}
-        keyStorePassword: ${{ secrets.KEYSTOREPASSWORD }}
-        keyPassword: ${{ secrets.KEYPASSWORD }}
-      env:
-        BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+    # - name: Sign APK
+    #   uses: r0adkll/sign-android-release@v1
+    #   with:
+    #     releaseDirectory: ${{ github.workspace }}/app/build/outputs/apk/release
+    #     signingKeyBase64: ${{ secrets.SIGNINGKEYBASE64 }}
+    #     alias: ${{ secrets.ALIAS }}
+    #     keyStorePassword: ${{ secrets.KEYSTOREPASSWORD }}
+    #     keyPassword: ${{ secrets.KEYPASSWORD }}
+    #   env:
+    #     BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
     - name: Renamae
-      run: mv ${{ github.workspace }}/app/build/outputs/apk/release/app-release-unsigned-signed.apk ${{ github.workspace }}/app/build/outputs/apk/release/fcmfix-ci-${{ env.VERSION_NAME }}.apk
+      run: mv ${{ github.workspace }}/app/build/outputs/apk/release/*.apk ${{ github.workspace }}/app/build/outputs/apk/release/fcmfix-ci-${{ env.VERSION_NAME }}.apk
     
     - name: Upload built apk
       uses: actions/upload-artifact@v4
@@ -59,29 +59,29 @@ jobs:
         name: release
         path: ${{ github.workspace }}/app/build/outputs/apk/release/fcmfix-ci-${{ env.VERSION_NAME }}.apk
 
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      with:
-        name: "Auto Release ${{ env.VERSION_NAME }}"
-        tag_name: ${{ env.VERSION_CODE }}-${{ env.VERSION_NAME }}
-        token: "${{ secrets.TOKEN }}"
-        files: |
-          ${{ github.workspace }}/app/build/outputs/apk/release/fcmfix-ci-${{ env.VERSION_NAME }}.apk
+    # - name: Release
+    #   uses: softprops/action-gh-release@v2
+    #   with:
+    #     name: "Auto Release ${{ env.VERSION_NAME }}"
+    #     tag_name: ${{ env.VERSION_CODE }}-${{ env.VERSION_NAME }}
+    #     token: "${{ secrets.TOKEN }}"
+    #     files: |
+    #       ${{ github.workspace }}/app/build/outputs/apk/release/fcmfix-ci-${{ env.VERSION_NAME }}.apk
     
-    - uses: dorny/paths-filter@v3
-      id: changes
-      with:
-        filters: |
-          src:
-            - 'app/build.gradle'
+    # - uses: dorny/paths-filter@v3
+    #   id: changes
+    #   with:
+    #     filters: |
+    #       src:
+    #         - 'app/build.gradle'
 
-    - name: Release lsposed module repository
-      if: steps.changes.outputs.src == 'true'
-      uses: softprops/action-gh-release@v2
-      with:
-        name: "Auto Release ${{ env.VERSION_NAME }}"
-        tag_name: ${{ env.VERSION_CODE }}-${{ env.VERSION_NAME }}
-        repository: Xposed-Modules-Repo/com.kooritea.fcmfix
-        token: "${{ secrets.TOKEN_CLASSIC }}"
-        files: |
-          ${{ github.workspace }}/app/build/outputs/apk/release/fcmfix-ci-${{ env.VERSION_NAME }}.apk
+    # - name: Release lsposed module repository
+    #   if: steps.changes.outputs.src == 'true'
+    #   uses: softprops/action-gh-release@v2
+    #   with:
+    #     name: "Auto Release ${{ env.VERSION_NAME }}"
+    #     tag_name: ${{ env.VERSION_CODE }}-${{ env.VERSION_NAME }}
+    #     repository: Xposed-Modules-Repo/com.kooritea.fcmfix
+    #     token: "${{ secrets.TOKEN_CLASSIC }}"
+    #     files: |
+    #       ${{ github.workspace }}/app/build/outputs/apk/release/fcmfix-ci-${{ env.VERSION_NAME }}.apk
