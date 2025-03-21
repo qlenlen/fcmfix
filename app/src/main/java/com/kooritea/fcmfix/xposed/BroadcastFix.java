@@ -41,29 +41,7 @@ public class BroadcastFix extends XposedModule {
             int intent_args_index = 0;
             int appOp_args_index = 0;
             Parameter[] parameters = targetMethod.getParameters();
-            if(Build.VERSION.SDK_INT == Build.VERSION_CODES.Q){
-                intent_args_index = 2;
-                appOp_args_index = 9;
-            }else if(Build.VERSION.SDK_INT == Build.VERSION_CODES.R){
-                intent_args_index = 3;
-                appOp_args_index = 10;
-            }else if(Build.VERSION.SDK_INT == 31){
-                intent_args_index = 3;
-                if(parameters[11].getType() == int.class){
-                    appOp_args_index = 11;
-                }
-                if(parameters[12].getType() == int.class){
-                    appOp_args_index = 12;
-                }
-            }else if(Build.VERSION.SDK_INT == 32){
-                intent_args_index = 3;
-                if(parameters[11].getType() == int.class){
-                    appOp_args_index = 11;
-                }
-                if(parameters[12].getType() == int.class){
-                    appOp_args_index = 12;
-                }
-            }else if(Build.VERSION.SDK_INT == 33){
+            if(Build.VERSION.SDK_INT == 33){
                 intent_args_index = 3;
                 appOp_args_index = 12;
             } else if(Build.VERSION.SDK_INT == 34){
