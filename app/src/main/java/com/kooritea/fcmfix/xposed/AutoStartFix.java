@@ -18,7 +18,6 @@ public class AutoStartFix extends XposedModule {
         super(loadPackageParam);
         try{
             this.startHook();
-            this.startHookRemovePowerPolicy();
         }catch (Exception e) {
             printLog("hook error AutoStartFix:" + e.getMessage());
         }
@@ -193,29 +192,6 @@ public class AutoStartFix extends XposedModule {
             });
         } catch (XposedHelpers.ClassNotFoundError | NoSuchMethodError  e) {
             printLog("No Such Method com.android.server.am.OplusAppStartupManager.isAllowStartFromBroadCast(5)");
-        }
-    }
-
-    protected void startHookRemovePowerPolicy(){
-        try {
-            // MIUI13
-            Class<?> AutoStartManagerService = XposedHelpers.findClass("com.miui.server.smartpower.SmartPowerPolicyManager",loadPackageParam.classLoader);
-            XposedUtils.findAndHookMethodAnyParam(AutoStartManagerService,"shouldInterceptService",new XC_MethodHook() {
-
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) {
-                    Intent intent = (Intent) param.args[0];
-                    if("com.google.firebase.MESSAGING_EVENT".equals(intent.getAction())){
-                        String target = intent.getComponent() == null ? intent.getPackage() : intent.getComponent().getPackageName();
-                        if(targetIsAllow(target)){
-                            printLog("Disable MIUI Intercept: " + target, true);
-                            param.setResult(false);
-                        }
-                    }
-                }
-            });
-        } catch (XposedHelpers.ClassNotFoundError | NoSuchMethodError  e) {
-            printLog("No Such Method com.miui.server.smartpower.SmartPowerPolicyManager.shouldInterceptService");
         }
     }
 }
