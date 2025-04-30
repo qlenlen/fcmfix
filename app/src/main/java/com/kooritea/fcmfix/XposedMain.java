@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import com.kooritea.fcmfix.xposed.AutoStartFix;
 import com.kooritea.fcmfix.xposed.BroadcastFix;
 import com.kooritea.fcmfix.xposed.KeepNotification;
-import com.kooritea.fcmfix.xposed.MiuiLocalNotificationFix;
 import com.kooritea.fcmfix.xposed.PowerkeeperFix;
 import com.kooritea.fcmfix.xposed.ReconnectManagerFix;
 import com.kooritea.fcmfix.xposed.XposedModule;
@@ -28,9 +27,6 @@ public class XposedMain implements IXposedHookLoadPackage {
             XposedModule.staticLoadPackageParam = loadPackageParam;
             XposedBridge.log("[fcmfix] start hook com.android.server.am.ActivityManagerService/com.android.server.am.BroadcastController");
             new BroadcastFix(loadPackageParam);
-
-            XposedBridge.log("[fcmfix] start hook com.android.server.notification.NotificationManagerServiceInjector");
-            new MiuiLocalNotificationFix(loadPackageParam);
 
             XposedBridge.log("[fcmfix] com.android.server.am.BroadcastQueueInjector.checkApplicationAutoStart");
             new AutoStartFix(loadPackageParam);
