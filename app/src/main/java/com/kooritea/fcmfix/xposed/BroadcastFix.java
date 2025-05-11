@@ -42,51 +42,25 @@ public class BroadcastFix extends XposedModule {
         Method targetMethod = null;
         int intent_args_index = 0;
         int appOp_args_index = 0;
-        if(Build.VERSION.SDK_INT >= 35){
-            targetMethod = XposedUtils.tryFindMethodMostParam(loadPackageParam,"com.android.server.am.BroadcastController","broadcastIntentLocked");
-            if(targetMethod != null){
-                if(Build.VERSION.SDK_INT >= 35){
-                    intent_args_index = 3;
-                    appOp_args_index = 13;
-                }
+        // non-exist in OneUI7
+        // if(Build.VERSION.SDK_INT >= 35){
+        //     targetMethod = XposedUtils.tryFindMethodMostParam(loadPackageParam,"com.android.server.am.BroadcastController","broadcastIntentLocked");
+        //     if(targetMethod != null){
+        //         if(Build.VERSION.SDK_INT >= 35){
+        //             intent_args_index = 3;
+        //             appOp_args_index = 13;
+        //         }
+        //     }
+        // }
+
+        targetMethod = XposedUtils.tryFindMethodMostParam(loadPackageParam,"com.android.server.am.ActivityManagerService","broadcastIntentLocked");
+        if(targetMethod != null){
+            Parameter[] parameters = targetMethod.getParameters();
+                intent_args_index = 3;
+                appOp_args_index = 13;
             }
         }
-        if(targetMethod == null){
-            targetMethod = XposedUtils.tryFindMethodMostParam(loadPackageParam,"com.android.server.am.ActivityManagerService","broadcastIntentLocked");
-            if(targetMethod != null){
-                Parameter[] parameters = targetMethod.getParameters();
-                if(Build.VERSION.SDK_INT == 34){
-                    intent_args_index = 3;
-                    if(parameters[12].getType() == int.class){
-                        appOp_args_index = 12;
-                    }
-                    if(parameters[13].getType() == int.class){
-                        appOp_args_index = 13;
-                    }
-                } else if(Build.VERSION.SDK_INT >= 35){
-                    intent_args_index = 3;
-                    if(parameters[12].getType() == int.class){
-                        appOp_args_index = 12;
-                    }
-                    if(parameters[13].getType() == int.class){
-                        appOp_args_index = 13;
-                    }
-                }
-                if(intent_args_index == 0 || appOp_args_index == 0){
-                    intent_args_index = 0;
-                    appOp_args_index = 0;
-                    // 根据参数名称查找，部分经过混淆的系统无效
-                    for(int i = 0; i < parameters.length; i++){
-                        if("appOp".equals(parameters[i].getName()) && parameters[i].getType() == int.class){
-                            appOp_args_index = i;
-                        }
-                        if("intent".equals(parameters[i].getName()) && parameters[i].getType() == Intent.class){
-                            intent_args_index = i;
-                        }
-                    }
-                }
-            }
-        }
+
         if(targetMethod != null && intent_args_index != 0 & appOp_args_index != 0 && targetMethod.getParameters()[intent_args_index].getType() == Intent.class && targetMethod.getParameters()[appOp_args_index].getType() == int.class){
             createBroadcastIntentLockedHooker(intent_args_index,appOp_args_index,targetMethod);
         } else {
@@ -125,36 +99,7 @@ public class BroadcastFix extends XposedModule {
                             methodHookParam.args[finalAppOp_args_index] = 11;
                         }
                         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                        if (getBooleanConfig("includeIceBoxDisableApp",false) && !IceboxUtils.isAppEnabled(context, target)) {
-                            printLog("Waiting for IceBox to activate the app: " + target, true);
-                            methodHookParam.setResult(false);
-                            new Thread(() -> {
-                                IceboxUtils.activeApp(context, target);
-                                for (int i1 = 0; i1 < 300; i1++) {
-                                    if (!IceboxUtils.isAppEnabled(context, target)) {
-                                        try {
-                                            Thread.sleep(100);
-                                        } catch (Throwable e) {
-                                            printLog("Send Forced Start Broadcast Error: " + target + " " + e.getMessage(), true);
-                                        }
-                                    } else {
-                                        break;
-                                    }
-                                }
-                                try {
-                                    if(IceboxUtils.isAppEnabled(context, target)){
-                                        printLog("Send Forced Start Broadcast: " + target, true);
-                                    }else{
-                                        printLog("Waiting for IceBox to activate the app timed out: " + target, true);
-                                    }
-                                    XposedBridge.invokeOriginalMethod(methodHookParam.method, methodHookParam.thisObject, methodHookParam.args);
-                                } catch (Throwable e) {
-                                    printLog("Send Forced Start Broadcast Error: " + target + " " + e.getMessage(), true);
-                                }
-                            }).start();
-                        }else{
-                            printLog("Send Forced Start Broadcast: " + target, true);
-                        }
+                        printLog("Send Forced Start Broadcast: " + target, true);
                     }
                 }
             }
